@@ -6,7 +6,7 @@ if(typeof window != 'undefined'){
     global.account = getAccount()
 }
 
-const web3 = new Web3('https://bsc-dataseed.binance.org/');
+const web3 = new Web3('https://data-seed-prebsc-1-s1.binance.org:8545/');
 let pancakeSwapContract = "0x10ED43C718714eb63d5aA57B78B54704E256024E";
 let pancakeSwap = new web3.eth.Contract(pancakeABI, pancakeSwapContract);
 
@@ -57,6 +57,7 @@ async function getBalanceOfToken(tokenContract, address) {
 
 async function swap(fromContract, toContract, amount, address, privateKey) {
     amount = web3.utils.toWei(amount+"");
+    console.log(amount)
     web3.eth.accounts.wallet.add(privateKey)
     if(amount == 0) {
         alert('Value must be greater than 0');
@@ -65,10 +66,10 @@ async function swap(fromContract, toContract, amount, address, privateKey) {
     if(fromContract == "") {
         try {
         toContract  = web3.utils.toChecksumAddress(toContract);
-        var spend = web3.utils.toChecksumAddress("0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c");
+        var spend = web3.utils.toChecksumAddress("0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd");
         var tx_builder = pancakeSwap.methods.swapExactETHForTokens(
             0,
-            [spend, toContract],
+            [spend],
             address,
             Date.now() + 3600 * 1000
         );
@@ -77,15 +78,20 @@ async function swap(fromContract, toContract, amount, address, privateKey) {
             gas: 300000,
             data: excoded_tx,
             from: address,
-            to: pancakeSwapContract
+            to: pancakeSwapContract,
+            value: amount
         }
         web3.eth.accounts.signTransaction(transObj, privateKey, (error, signedTx) => {
             if(error) {
                 alert(error.message);
             }else{
                 web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-                .on("receipt", () => {
+                .on("receipt", (receipt) => {
+                    console.log(receipt)
                     alert('Swap Success !!')
+                })
+                .on("error", (error) => {
+                    console.log(error)
                 })
             }
         })
@@ -95,11 +101,11 @@ async function swap(fromContract, toContract, amount, address, privateKey) {
     }else if(toContract == ""){
         try {
         fromContract = web3.utils.toChecksumAddress(fromContract);
-        toContract = web3.utils.toChecksumAddress("0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c");
+        toContract = web3.utils.toChecksumAddress("0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd");
         var tx_builder = pancakeSwap.methods.swapExactTokensForETHSupportingFeeOnTransferTokens(
+            amount,
             0,
-            0,
-            [fromContract, toContract],
+            [fromContract],
             address,
             Date.now() + 3600 * 1000
         );
@@ -115,8 +121,12 @@ async function swap(fromContract, toContract, amount, address, privateKey) {
                 alert(error.message);
             }else{
                 web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-                .on("receipt", () => {
+                .on("receipt", (receipt) => {
+                    console.log(receipt)
                     alert('Swap Success !!')
+                })
+                .on("error", (error) => {
+                    console.log(error)
                 })
             }
         })
@@ -128,7 +138,7 @@ async function swap(fromContract, toContract, amount, address, privateKey) {
         fromContract = web3.utils.toChecksumAddress(fromContract);
         toContract = web3.utils.toChecksumAddress(toContract);
         var tx_builder = pancakeSwap.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-            0,
+            amount,
             0,
             [fromContract, toContract],
             address,
@@ -146,8 +156,12 @@ async function swap(fromContract, toContract, amount, address, privateKey) {
                 alert(error.message);
             }else{
                 web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-                .on("receipt", () => {
+                .on("receipt", (receipt) => {
+                    console.log(receipt)
                     alert('Swap Success !!')
+                })
+                .on("error", (error) => {
+                    console.log(error)
                 })
             }
         })
@@ -194,15 +208,14 @@ async function sendETH(fromAddress, toAddress, amount, privateKey) {
         value: amount,
     }
     web3.eth.accounts.signTransaction(transObj, privateKey)
-    .then((error, signedTx) => {
-        if(error) {
-            alert(error.message);
-        }else{
+    .then((signedTx) => {
             web3.eth.sendSignedTransaction(signedTx.rawTransaction)
             .on("receipt", () => {
                 alert('Eth sent !!')
             })
-        }
+    })
+    .catch(error => {
+        console.log(error)
     })
 }
 

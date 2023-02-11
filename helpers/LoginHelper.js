@@ -1,7 +1,7 @@
 import Web3 from "web3"
 import { reactLocalStorage } from 'reactjs-localstorage';
 
-const web3 = new Web3('https://bsc-dataseed.binance.org/')
+const web3 = new Web3('https://data-seed-prebsc-1-s1.binance.org:8545/')
 
 function createAccount() {
     return(web3.eth.accounts.create())

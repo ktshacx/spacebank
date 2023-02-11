@@ -8,7 +8,7 @@ import { getToken, getAmountsOut, getDecimals, getBalanceOfToken, approve, swap,
 import Login from "./login";
 
 export default function MainHome() {
-    const web3 = new Web3('https://bsc-dataseed.binance.org/');
+    const web3 = new Web3('https://data-seed-prebsc-1-s1.binance.org:8545/');
 
     const router = useRouter();
 
@@ -32,7 +32,7 @@ export default function MainHome() {
     const [amountTo, setAmountTo] = useState(0);
     const [price, setPrice] = useState(0);
     const [currency, setCurrency] = useState(["","BNB", 18]);
-    const [currencyTo, setCurrencyTo] = useState(["0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56","BUSD", 18]);
+    const [currencyTo, setCurrencyTo] = useState(["0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee","BUSD", 18]);
 
     //modal
     const fromModal = useDisclosure()
@@ -47,7 +47,7 @@ export default function MainHome() {
         }else{
             setAccount(getAccount()); 
             getBalance().then((bal) => {
-                setBalance(bal);
+                setBalance(bal / 10 ** 18);
             }); 
         }
     }, [])
@@ -55,7 +55,7 @@ export default function MainHome() {
     useEffect(() => {
         if(w){
         (async () => {
-            let p = await getAmountsOut((currency[0] == "" ? "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c" : currency[0]), (currencyTo[0] == "" ? "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c" : currencyTo[0]))
+            let p = await getAmountsOut((currency[0] == "" ? "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd" : currency[0]), (currencyTo[0] == "" ? "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd" : currencyTo[0]))
             if(await p == 'false'){
                 alert('Pair Not Found')
                 return;
@@ -65,22 +65,6 @@ export default function MainHome() {
 
         getBalance1()
         getBalance2()
-
-        if(amount.toString().split('.')[1] == 0){
-            setAmount(amount.toString().split('.')[0])
-        }
-
-        if(amountTo.toString().split('.')[1] == 0){
-            setAmountTo(amountTo.toString().split('.')[0])
-        }
-
-        if(amount == "" || Number(amount) < 0) {
-            setAmount(0)
-        }
-
-        if(amountTo == "" || Number(amountTo) < 0) {
-            setAmountTo(0)
-        }
         }
     }, [currency, currencyTo, amount, amountTo])
 
@@ -106,15 +90,17 @@ export default function MainHome() {
         }
     }
 
-    function handleAmount1() {
+    function handleAmount1(amount) {
+        setAmount(amount)
         let decimal =  !currency[2] ? 18 : currency[2];
-        let p = (price / 10 ** decimal) * event.target.value;
+        let p = (price / 10 ** decimal) * amount;
         setAmountTo(p.toFixed(5))
     }
 
-    function handleAmount2() {
+    function handleAmount2(amount) {
+        setAmountTo(amount)
         let decimal =  !currency[2] ? 18 : currency[2];
-        let px = event.target.value / (price / 10 ** decimal);
+        let px = amount / (price / 10 ** decimal);
         setAmount(px.toFixed(5))
     }
 
@@ -150,21 +136,21 @@ export default function MainHome() {
                             <FormControl mt={'10px'}>
                                 <FormLabel>From (Bal: {balanceFrom})</FormLabel>
                                 <InputGroup>
-                                    <Input type={'number'} placeholder="0" value={amount} onChange={() => {setAmount(event.target.value); handleAmount1()}}/>
+                                    <Input type={'number'} placeholder="0" value={amount} onChange={() => {handleAmount1(event.target.value);}}/>
                                     <InputRightAddon cursor={'pointer'} onClick={fromModal.onOpen}>{currency[1]}</InputRightAddon>
                                 </InputGroup>
                             </FormControl>
                             <FormControl mt={'10px'} mb={'10px'}>
                                 <FormLabel>To (Bal: {balanceTo})</FormLabel>
                                 <InputGroup>
-                                    <Input type={'number'} placeholder="0.5" value={amountTo} onChange={() => {setAmountTo(event.target.value); handleAmount2()}}/>
+                                    <Input type={'number'} placeholder="0" value={amountTo} onChange={() => {handleAmount2(event.target.value)}}/>
                                     <InputRightAddon cursor={'pointer'} onClick={() => {toModal.onOpen()}}>{currencyTo[1]}</InputRightAddon>
                                 </InputGroup>
                             </FormControl>
                             {(currency[0] != "") && (
-                                <Button colorScheme={'green'} width={'100%'} mt="5px" isDisabled={balanceFrom < amount || balanceTo < amountTo} onClick={()=> approve(currency[0], account.address, amount * 10 ** 18, account.privateKey)}>Approve</Button>
+                                <Button colorScheme={'green'} width={'100%'} mt="5px" isDisabled={balanceFrom < amount || balanceTo < amountTo} onClick={()=> approve(currency[0], account.address, amount, account.privateKey)}>Approve</Button>
                             )}
-                            <Button onClick={() => {swap(currency[0], currencyTo[0], amount * 10 ** 18, account.address, account.privateKey)}} colorScheme={balanceFrom < amount || balanceTo < amountTo || balanceFrom == 0 ? 'red' : 'green'} width={'100%'} mt="5px" isDisabled={balanceFrom < amount || balanceTo < amountTo || balanceFrom == 0}>{balanceFrom < amount || balanceTo < amountTo || balanceFrom == 0 ? "You can't swap" : "Swap"}</Button>
+                            <Button onClick={() => {swap(currency[0], currencyTo[0], amount, account.address, account.privateKey)}} colorScheme={balanceFrom < amount || balanceFrom == 0 ? 'red' : 'green'} width={'100%'} mt="5px" isDisabled={balanceFrom < amount || balanceFrom == 0}>{balanceFrom < amount || balanceFrom == 0 ? "You can't swap" : "Swap"}</Button>
                         </Box>
                     </Box>) : (
                         <Box mt="30px">
@@ -220,7 +206,7 @@ export default function MainHome() {
                                 </FormControl>
                                 <FormControl mt={2}>
                                     <FormLabel>Address</FormLabel>
-                                    <Input type={'number'} placeholder={'Enter Address to send'} value={AddyToSent} onChange={() => setAddyToSent(event.target.value)}/>
+                                    <Input type={'text'} placeholder={'Enter Address to send'} value={AddyToSent} onChange={() => setAddyToSent(event.target.value)}/>
                                 </FormControl>
                             </ModalBody>
 
