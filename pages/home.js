@@ -48,7 +48,7 @@ export default function MainHome() {
             setAccount(getAccount()); 
             getBalance().then((bal) => {
                 setBalance(bal / 10 ** 18);
-            }); 
+            });
         }
     }, [])
 
@@ -74,7 +74,7 @@ export default function MainHome() {
         }else{
             if(account){
             let b = await getBalanceOfToken(currency[0], account.address);
-            setBalanceFrom(b);
+            setBalanceFrom(b / 10 ** 18);
             }
         }
     }
@@ -85,7 +85,7 @@ export default function MainHome() {
         }else{
             if(account){
             let b = await getBalanceOfToken(currencyTo[0], account.address);
-            setBalanceTo(b);
+            setBalanceTo(b / 10 ** 18);
             }
         }
     }
@@ -175,17 +175,20 @@ export default function MainHome() {
                                 </FormControl>
                             <List spacing={3} mt={4}>
                                     {currencyList.map((curr, index) => {
-                                        let bl;
-                                        if(curr.contract != ""){
-                                            getBalanceOfToken(curr.contract, account.address).then((bal) =>{ bl = bal})
-                                        }else{
+                                        let bl = 0;
+                                    
+                                        if(curr.contract == ""){
                                             bl = balance;
+                                        }else{
+                                            getBalanceOfToken(curr.contract, account.address).then((bal) => { 
+                                                bl = bal / 10 ** 18;
+                                            });
                                         }
+                                        
                                         return (
-                                            
                                             <ListItem p={4} key={index} backgroundColor={'gray.100'} borderRadius={'xl'} _hover={{background: 'gray.300', cursor: 'pointer', borderRadius: 'xl'}} display="flex" justifyContent={'space-between'} onClick={() => {setSendToken(curr.contract); setSendTokenName(curr.name); setSendTokenBal(bl ? bl : 0); sendBNBModal.onOpen()}}>
                                                 <Text fontWeight={'700'}>{curr.name}</Text>
-                                                <Text fontWeight={'700'}>{bl ? bl : "0"} {curr.name}</Text>
+                                                <Text fontWeight={'700'}>{bl ? bl : 0} {curr.name}</Text>
                                             </ListItem>
                                         )
                                     })}
@@ -212,7 +215,7 @@ export default function MainHome() {
 
                             <ModalFooter>
                                 <Button onClick={sendBNBModal.onClose}>Close</Button>
-                                <Button colorScheme={'green'} onClick={() => {sendToken == "" ? sendETH(account.address, AddyToSent, sendTokenAmt, account.privateKey) : sendTOKEN(account.address, AddyToSent, sendTokenAmt, sendToken, account.privateKey)}} isDisabled={(sendTokenAmt < 0 || sendTokenAmt == 0 || sendTokenAmt == "" || sendTokenAmt > sendTokenBal)}>Send</Button>
+                                <Button colorScheme={'green'} onClick={() => {sendToken == "" ? sendETH(account.address, AddyToSent, sendTokenAmt, account.privateKey) : sendTOKEN(account.address, AddyToSent, sendTokenAmt, sendToken, account.privateKey)}} isDisabled={(AddyToSent == "" || !AddyToSent || sendTokenAmt < 0 || sendTokenAmt == 0 || sendTokenAmt == "" || sendTokenAmt > sendTokenBal)}>Send</Button>
                             </ModalFooter>
                         </ModalContent>
                     </Modal>
@@ -231,7 +234,7 @@ export default function MainHome() {
                                         if(!event.target.value || event.target.value == 'undefined' || event.target.value == "" || !web3.utils.isHex(event.target.value) || !web3.utils.isAddress(event.target.value, 97) || web3.eth.getCode(event.target.value) == "0x"){
                                             return;
                                         }
-                                        if(!web3.utils.checkAddressChecksum(event.target.value, 57)) {
+                                        if(!web3.utils.checkAddressChecksum(event.target.value, 96)) {
                                             event.target.value = web3.utils.toChecksumAddress(event.target.value);
                                         } 
                                         try {
@@ -279,7 +282,7 @@ export default function MainHome() {
                                         if(!event.target.value || event.target.value == 'undefined' || event.target.value == "" || !web3.utils.isHex(event.target.value) || !web3.utils.isAddress(event.target.value, 97) || web3.eth.getCode(event.target.value) == "0x"){
                                             return;
                                         }
-                                        if(!web3.utils.checkAddressChecksum(event.target.value, 57)) {
+                                        if(!web3.utils.checkAddressChecksum(event.target.value, 96)) {
                                             event.target.value = web3.utils.toChecksumAddress(event.target.value);
                                         } 
                                         try {

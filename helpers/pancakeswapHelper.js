@@ -50,9 +50,9 @@ async function getDecimals(tokenContract) {
 
 async function getBalanceOfToken(tokenContract, address) {
     web3.eth.accounts.wallet.add(account.privateKey)
-    let token = await new web3.eth.Contract(tokenABI, tokenContract.toLowerCase());
+    let token = new web3.eth.Contract(tokenABI, tokenContract.toLowerCase());
     let balance = await token.methods.balanceOf(address).call(); 
-    return balance;
+    return await balance;
 }
 
 async function swap(fromContract, toContract, amount, address, privateKey) {
@@ -222,13 +222,14 @@ async function sendETH(fromAddress, toAddress, amount, privateKey) {
 async function sendTOKEN(fromAddress, toAddress, amount, tokenContract, privateKey) {
     amount = web3.utils.toWei(amount+"");
     try {
+        console.log(tokenContract);
         let token = await new web3.eth.Contract(tokenABI, tokenContract.toLowerCase());
         let tx_builder = token.methods.transfer(toAddress, amount);
         var excoded_tx = tx_builder.encodeABI();
         let transObj = {
             gas: 300000,
             data: excoded_tx,
-            from: address,
+            from: fromAddress,
             to: tokenContract
         }
         web3.eth.accounts.signTransaction(transObj, privateKey, (error, signedTx) => {
@@ -242,7 +243,8 @@ async function sendTOKEN(fromAddress, toAddress, amount, tokenContract, privateK
             }
         })
     }catch(err){
-        alert(err.message)
+        console.log(err)
+        alert("Error!! "+err.message)
     }
 }
 
