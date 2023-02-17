@@ -2,6 +2,7 @@ import { Box, Button, ButtonGroup, FormControl, FormLabel, Heading, Input, Input
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import Web3 from "web3";
+import { tokenABI } from "../helpers/abiHelper";
 import { currencyList } from "../helpers/CurrencyHelper";
 import { isSessionAvaiable, getAccount, getBalance, isLoggedIn } from "../helpers/LoginHelper";
 import { getToken, getAmountsOut, getDecimals, getBalanceOfToken, approve, swap, sendETH, sendTOKEN } from "../helpers/pancakeswapHelper";
@@ -71,25 +72,6 @@ export default function MainHome() {
         }
     }, [currency, currencyTo, amount, amountTo])
 
-    useEffect(() => {
-        if(account) {
-        (async () => {
-            let map = [];
-            await currencyList.map(async (curr, index) => {
-            
-                if(curr.contract == ""){
-                    map.push(balance);
-                }else{
-                    let bal = await getBalanceOfToken(curr.contract, account.address);
-                    await map.push(balance);
-                }  
-            });
-            await setBalances(map);
-            map = [];
-        })()
-        }
-    })
-
     async function getBalance1() {
         if(currency[0] == "") {
             setBalanceFrom(balance);
@@ -125,6 +107,28 @@ export default function MainHome() {
         let px = amount / (price / 10 ** decimal);
         setAmount(px.toFixed(5))
     }
+
+    async function getAllBalances() {
+        if(w) {
+            let map = [];
+            for(let i = 0; i < currencyList.length; i++){
+                if(currencyList[i].contract == ""){
+                    map.push(Number(balance))
+                }else{
+                    map.push(Number(await getBalanceOfToken(currencyList[i].contract, account.address)) / 10 ** 18);
+                }
+            }
+            return map;
+        }
+    }
+
+    useEffect(() => {
+        getAllBalances()
+        .then((data) => {
+            console.log(data)
+            setBalances(data);
+        })
+    }, [])
 
     if(w) {
         if(isSessionAvaiable() == false) {
@@ -196,13 +200,14 @@ export default function MainHome() {
                                     }}/>
                                 </FormControl>
                             <List spacing={3} mt={4}>
-                                    {currencyList.map((curr, index) => {
+                                    {balances && currencyList.map((curr, index) => {
+                                        let bal = balances[index];
                                         return (
-                                            <ListItem p={4} key={index} backgroundColor={'gray.100'} borderRadius={'xl'} _hover={{background: 'gray.300', cursor: 'pointer', borderRadius: 'xl'}} display="flex" justifyContent={'space-between'} onClick={() => {setSendToken(curr.contract); setSendTokenName(curr.name); setSendTokenBal(balances[index] ? balances[index] : 0); sendBNBModal.onOpen()}}>
-                                                <Text fontWeight={'700'}>{curr.name}</Text>
-                                                <Text fontWeight={'700'}>{balances[index] ? balances[index] : 0} {curr.name}</Text>
-                                            </ListItem>
-                                        )
+                                                <ListItem p={4} key={index} backgroundColor={'gray.100'} borderRadius={'xl'} _hover={{background: 'gray.300', cursor: 'pointer', borderRadius: 'xl'}} display="flex" justifyContent={'space-between'} onClick={() => {setSendToken(curr.contract); setSendTokenName(curr.name); setSendTokenBal(balances[index] ? balances[index] : 0); sendBNBModal.onOpen()}}>
+                                                    <Text fontWeight={'700'}>{curr.name}</Text>
+                                                    <Text fontWeight={'700'}>{bal ? bal : 0} {curr.name}</Text>
+                                                </ListItem>
+                                            )
                                     })}
                                 </List>
                         </Box>
