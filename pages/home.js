@@ -34,6 +34,8 @@ export default function MainHome() {
     const [currency, setCurrency] = useState(["","BNB", 18]);
     const [currencyTo, setCurrencyTo] = useState(["0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee","BUSD", 18]);
 
+    const [balances, setBalances] = useState([]);
+
     //modal
     const fromModal = useDisclosure()
     const toModal = useDisclosure()
@@ -63,10 +65,30 @@ export default function MainHome() {
             setPrice(await p[1])
         })()
 
+        
         getBalance1()
         getBalance2()
         }
     }, [currency, currencyTo, amount, amountTo])
+
+    useEffect(() => {
+        if(account) {
+        (async () => {
+            let map = [];
+            await currencyList.map(async (curr, index) => {
+            
+                if(curr.contract == ""){
+                    map.push(balance);
+                }else{
+                    let bal = await getBalanceOfToken(curr.contract, account.address);
+                    await map.push(balance);
+                }  
+            });
+            await setBalances(map);
+            map = [];
+        })()
+        }
+    })
 
     async function getBalance1() {
         if(currency[0] == "") {
@@ -175,20 +197,10 @@ export default function MainHome() {
                                 </FormControl>
                             <List spacing={3} mt={4}>
                                     {currencyList.map((curr, index) => {
-                                        let bl = 0;
-                                    
-                                        if(curr.contract == ""){
-                                            bl = balance;
-                                        }else{
-                                            getBalanceOfToken(curr.contract, account.address).then((bal) => { 
-                                                bl = bal / 10 ** 18;
-                                            });
-                                        }
-                                        
                                         return (
-                                            <ListItem p={4} key={index} backgroundColor={'gray.100'} borderRadius={'xl'} _hover={{background: 'gray.300', cursor: 'pointer', borderRadius: 'xl'}} display="flex" justifyContent={'space-between'} onClick={() => {setSendToken(curr.contract); setSendTokenName(curr.name); setSendTokenBal(bl ? bl : 0); sendBNBModal.onOpen()}}>
+                                            <ListItem p={4} key={index} backgroundColor={'gray.100'} borderRadius={'xl'} _hover={{background: 'gray.300', cursor: 'pointer', borderRadius: 'xl'}} display="flex" justifyContent={'space-between'} onClick={() => {setSendToken(curr.contract); setSendTokenName(curr.name); setSendTokenBal(balances[index] ? balances[index] : 0); sendBNBModal.onOpen()}}>
                                                 <Text fontWeight={'700'}>{curr.name}</Text>
-                                                <Text fontWeight={'700'}>{bl ? bl : 0} {curr.name}</Text>
+                                                <Text fontWeight={'700'}>{balances[index] ? balances[index] : 0} {curr.name}</Text>
                                             </ListItem>
                                         )
                                     })}
