@@ -128,7 +128,7 @@ export default function MainHome() {
             console.log(data)
             setBalances(data);
         })
-    }, [])
+    })
 
     if(w) {
         if(isSessionAvaiable() == false) {

