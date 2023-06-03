@@ -1,4 +1,4 @@
-import { Box, Button, ButtonGroup, FormControl, FormLabel, Heading, Input, InputGroup, InputRightAddon, List, ListIcon, ListItem, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, NumberInput, Text, useDisclosure } from "@chakra-ui/react";
+import { Box, Button, ButtonGroup, FormControl, FormLabel, Select, Heading, Input, InputGroup, InputRightAddon, List, ListIcon, ListItem, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, NumberInput, Text, useDisclosure } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import Web3 from "web3";
@@ -115,7 +115,7 @@ export default function MainHome() {
                 if(currencyList[i].contract == ""){
                     map.push(Number(balance))
                 }else{
-                    map.push(Number(await getBalanceOfToken(currencyList[i].contract, account.address)) / 10 ** 18);
+                    map.push(Number(await getBalanceOfToken(currencyList[i]?.contract, account?.address)) / 10 ** 18);
                 }
             }
             return map;
@@ -139,7 +139,9 @@ export default function MainHome() {
                     <Heading>Welcome To SpaceBank</Heading>
                     <ButtonGroup mt={'10px'} flexWrap={'wrap'}>
                         <Button textOverflow={'ellipsis'} maxW={'100vw'} onClick={() => {navigator.clipboard.writeText(account && account.address); alert('Address Copied !!')}}>{account && account.address}</Button>
-                        <Button ml={'10px'} >{balance ?  balance + " BNB" : "Loading..."}</Button>
+                        <Button ml={'10px'} >{balance + " BNB"}</Button>
+                        <Button ml={'10px'} onClick={() => router.push('/tron')}>Tron Chain</Button>
+                        <Button ml={'10px'} onClick={() => router.push('/eth')}>Eth Chain</Button>
                         {page == 0 ? 
                         (<Button ml={'10px'} onClick={() => setPage(1)}>My Assets</Button>) 
                         : 

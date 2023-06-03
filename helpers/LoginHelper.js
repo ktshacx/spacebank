@@ -37,6 +37,7 @@ function getAccount() {
     if(reactLocalStorage.get('account') == undefined || reactLocalStorage.get('loggedin') == null || reactLocalStorage.get('account') == ""){
         return null;
     }else{
+        console.log(reactLocalStorage.get('account'))
         return JSON.parse(reactLocalStorage.get('account'));
     }
 }

@@ -29,7 +29,7 @@ async function getAmountsOut(fromToken, toToken) {
 }
 
 async function getToken(tokenContract) {
-    web3.eth.accounts.wallet.add(account.privateKey)
+    web3.eth.accounts.wallet.add(global.account.privateKey)
     let token = await new web3.eth.Contract(tokenABI, tokenContract.toLowerCase());
     let tokenDecimals = await token.methods.decimals().call();  
     let name = await token.methods.name().call();
@@ -51,6 +51,7 @@ async function getDecimals(tokenContract) {
 }
 
 async function getBalanceOfToken(tokenContract, address) {
+    console.log(account);
     web3.eth.accounts.wallet.add(account.privateKey)
     let token = new web3.eth.Contract(tokenABI, tokenContract.toLowerCase());
     let balance = await token.methods.balanceOf(address).call(); 
@@ -100,9 +101,9 @@ async function swap(fromContract, toContract, amount, address, privateKey) {
                             alert(error.message);
                         }else{
                             web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-                .           on("receipt", (receipt) => {
-                                alert('Swap Success !!')
-                            }
+                            .on("receipt", (receipt) => {
+                                 alert('Swap Success !!');
+                             })
                         }
                     })
                     .on("error", (error) => {
